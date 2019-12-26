@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import App from './Components/App/App';
+import './styles.css';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+//Напиши приложение поиска изображений по ключевому слову. Превью рабочего приложения смотри по ссылке.
+
+//Создай компоненты <Searchbar>,
+//<ImageGallery>, <ImageGalleryItem>, <Loader>, <Button> и <Modal>.
+//Готовые стили компонентов можно взять в файле styles.css и подправить под себя, если необходимо.
