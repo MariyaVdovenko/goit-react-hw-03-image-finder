@@ -26,7 +26,7 @@ export default class App extends Component {
   componentDidMount() {}
   componentDidUpdate(prevProps, prevState) {
     if (prevState.search !== this.state.search) {
-      this.fetchImages();
+      this.fetchImages(false);
     }
   }
 
@@ -34,7 +34,11 @@ export default class App extends Component {
     this.setState({ search, images: [], pageNumber: 1 });
   };
 
-  fetchImages = () => {
+  fetchImagesWithScroll = () => {
+    this.fetchImages(true);
+  };
+
+  fetchImages = scroll => {
     this.setState({ isLoading: true });
     const { search, pageNumber } = this.state;
     imagesApi
@@ -44,6 +48,7 @@ export default class App extends Component {
           images: [...state.images, ...images],
           pageNumber: state.pageNumber + 1,
         }));
+        return images[0];
       })
       .catch(error => {
         this.setState({ error });
@@ -51,11 +56,19 @@ export default class App extends Component {
       .finally(() => {
         this.setState({ isLoading: false });
       })
-      .then(() => {
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: 'smooth',
-        });
+      .then(firstLoadedImage => {
+        if (scroll) {
+          const { id } = firstLoadedImage;
+
+          const y =
+            document.getElementById(id).getBoundingClientRect().top +
+            window.scrollY -
+            80;
+          window.scrollTo({
+            top: y,
+            behavior: 'smooth',
+          });
+        }
       });
   };
 
@@ -82,7 +95,9 @@ export default class App extends Component {
         <Searchbar onSubmit={this.onSearch} />
         <ImageGallery openModal={this.openModal} images={images} />
         {isLoading && <Loader />}
-        {images.length > 0 && <Button fetchImages={this.fetchImages} />}
+        {images.length > 0 && (
+          <Button fetchImages={this.fetchImagesWithScroll} />
+        )}
         {isModalOpen && (
           <Modal largeImageId={largeImageId} onClose={this.closeModal}>
             <img src={this.findPic().largeImageURL} alt={this.findPic().tags} />
