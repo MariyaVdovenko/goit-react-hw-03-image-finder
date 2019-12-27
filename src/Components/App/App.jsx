@@ -3,6 +3,9 @@ import Searchbar from '../Searchbar/Searchbar';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import * as imagesApi from '../../services/images-api';
 import Button from '../Button/Button';
+import Loader from '../Loader/Loader';
+import Modal from '../Modal/Modal';
+import styles from '../App/App.module.css';
 
 export default class App extends Component {
   static defaultProps = {};
@@ -14,6 +17,10 @@ export default class App extends Component {
     pageNumber: 1,
     search: '',
     error: '',
+    isLoading: false,
+    isModalOpen: false,
+    largeImageId: null,
+    largeImage: [],
   };
 
   componentDidMount() {}
@@ -28,6 +35,7 @@ export default class App extends Component {
   };
 
   fetchImages = () => {
+    this.setState({ isLoading: true });
     const { search, pageNumber } = this.state;
     imagesApi
       .fetchImages(search, pageNumber)
@@ -39,16 +47,46 @@ export default class App extends Component {
       })
       .catch(error => {
         this.setState({ error });
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      })
+      .then(() => {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth',
+        });
       });
   };
 
+  findPic = () => {
+    const largeImg = this.state.images.find(image => {
+      return image.id === this.state.largeImageId;
+    });
+    return largeImg;
+  };
+
+  openModal = e => {
+    this.setState({
+      isModalOpen: true,
+      largeImageId: Number(e.currentTarget.id),
+    });
+  };
+  closeModal = () => this.setState({ isModalOpen: false });
+
   render() {
+    const { isLoading, images, isModalOpen, largeImageId } = this.state;
+
     return (
-      <div>
+      <div className={styles.App}>
         <Searchbar onSubmit={this.onSearch} />
-        <ImageGallery images={this.state.images} />
-        {this.state.images.length > 0 && (
-          <Button fetchImages={this.fetchImages} />
+        <ImageGallery openModal={this.openModal} images={images} />
+        {isLoading && <Loader />}
+        {images.length > 0 && <Button fetchImages={this.fetchImages} />}
+        {isModalOpen && (
+          <Modal largeImageId={largeImageId} onClose={this.closeModal}>
+            <img src={this.findPic().largeImageURL} alt={this.findPic().tags} />
+          </Modal>
         )}
       </div>
     );
